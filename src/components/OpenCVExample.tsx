@@ -20,7 +20,7 @@ export default function OpenCVExample() {
       .catch(() => {
         setError("Failed to load OpenCV.");
       });
-      console.log(isLoaded, errorMsg, cameraAvailable);
+      console.log(isLoaded, error, cameraAvailable);
   }, []);
 
   // Attempt to access webcam
