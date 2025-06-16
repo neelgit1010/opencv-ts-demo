@@ -19,6 +19,7 @@ export default function OpenCVExample() {
         console.error("OpenCV load error:", err);
         setErrorMsg("Failed to load OpenCV.");
       });
+      console.log(isLoaded, errorMsg, cameraAvailable);
   }, []);
 
   // 2. Try accessing webcam
@@ -37,6 +38,7 @@ export default function OpenCVExample() {
         setCameraAvailable(false);
         setErrorMsg("No webcam detected or permission denied.");
       });
+      
   }, [isLoaded]);
 
   // 3. Frame processing logic
