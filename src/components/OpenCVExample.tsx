@@ -26,9 +26,12 @@ export default function OpenCVExample() {
   useEffect(() => {
     if (!isLoaded) return;
 
+    console.log("Trying to access camera...");
+
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then((stream) => {
+        console.log("Camera stream acquired:", stream);
         setCameraAvailable(true);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -36,11 +39,12 @@ export default function OpenCVExample() {
         }
       })
       .catch((err) => {
-        console.error("No camera available:", err);
+        console.error("Camera error:", err);
         setCameraAvailable(false);
         setError("No webcam detected or permission denied.");
       });
   }, [isLoaded]);
+  
 
   // Process frame with OpenCV
   const processFrame = () => {
