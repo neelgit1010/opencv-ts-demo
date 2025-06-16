@@ -20,6 +20,7 @@ export default function OpenCVExample() {
       .catch(() => {
         setError("Failed to load OpenCV.");
       });
+      console.log(isLoaded, error, cameraAvailable);
   }, []);
 
   // Attempt to access webcam
@@ -43,6 +44,7 @@ export default function OpenCVExample() {
         setCameraAvailable(false);
         setError("No webcam detected or permission denied.");
       });
+      
   }, [isLoaded]);
   
 
