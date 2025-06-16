@@ -1,3 +1,4 @@
+// /helper/OpencvLoader.ts
 export const loadOpenCv = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     if ((window as any).cv?.["ready"]) {
@@ -5,7 +6,6 @@ export const loadOpenCv = (): Promise<void> => {
     } else {
       (window as any).cv = {
         onRuntimeInitialized: () => {
-          console.log("OpenCV runtime initialized");
           resolve();
         },
       };
