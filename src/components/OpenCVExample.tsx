@@ -6,75 +6,68 @@ import { loadOpenCv } from "@/helper/OpencvLoader";
 export default function OpenCVExample() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
   const [isLoaded, setIsLoaded] = useState(false);
-  const [cameraAvailable, setCameraAvailable] = useState(true);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [cameraAvailable, setCameraAvailable] = useState(false);
+  const [error, setError] = useState("");
 
-  // 1. Load OpenCV.js
+  // Load OpenCV
   useEffect(() => {
     loadOpenCv()
-      .then(() => setIsLoaded(true))
-      .catch((err) => {
-        console.error("OpenCV load error:", err);
-        setErrorMsg("Failed to load OpenCV.");
+      .then(() => {
+        console.log("OpenCV ready");
+        setIsLoaded(true);
+      })
+      .catch(() => {
+        setError("Failed to load OpenCV.");
       });
   }, []);
 
-  // 2. Try accessing webcam
+  // Attempt to access webcam
   useEffect(() => {
-    if (!isLoaded || !videoRef.current) return;
+    if (!isLoaded) return;
 
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then((stream) => {
-        videoRef.current!.srcObject = stream;
-        videoRef.current!.play();
         setCameraAvailable(true);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
       })
       .catch((err) => {
-        console.warn("No webcam available or permission denied:", err);
+        console.error("No camera available:", err);
         setCameraAvailable(false);
-        setErrorMsg("No webcam detected or permission denied.");
+        setError("No webcam detected or permission denied.");
       });
   }, [isLoaded]);
 
-  // 3. Frame processing logic
+  // Process frame with OpenCV
   const processFrame = () => {
     const cv = (window as any).cv;
     if (!cv || !videoRef.current || !canvasRef.current) return;
 
-    try {
-      const cap = new cv.VideoCapture(videoRef.current);
-      const src = new cv.Mat(
-        videoRef.current.videoHeight,
-        videoRef.current.videoWidth,
-        cv.CV_8UC4
-      );
-      const dst = new cv.Mat();
-
-      cap.read(src);
-      cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
-      cv.imshow(canvasRef.current, dst);
-
-      src.delete();
-      dst.delete();
-    } catch (error) {
-      console.error("OpenCV processing error:", error);
-      setErrorMsg("Error during frame processing.");
-    }
+    const src = new cv.Mat(
+      videoRef.current.videoHeight,
+      videoRef.current.videoWidth,
+      cv.CV_8UC4
+    );
+    const dst = new cv.Mat();
+    const cap = new cv.VideoCapture(videoRef.current);
+    cap.read(src);
+    cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
+    cv.imshow(canvasRef.current, dst);
+    src.delete();
+    dst.delete();
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4 text-white">
-      {errorMsg && <div className="text-red-500 font-semibold">{errorMsg}</div>}
-
+    <div className="flex flex-col items-center gap-4 text-white">
       <video
         ref={videoRef}
         width="320"
         height="240"
         className="rounded border"
-        style={{ backgroundColor: "#000" }}
       />
       <canvas
         ref={canvasRef}
@@ -82,7 +75,6 @@ export default function OpenCVExample() {
         height="240"
         className="rounded border"
       />
-
       <button
         className="mt-2 px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
         onClick={processFrame}
@@ -90,6 +82,10 @@ export default function OpenCVExample() {
       >
         Process Frame
       </button>
+      {error && <p className="text-red-500 mt-4">{error}</p>}
+      {!error && !cameraAvailable && (
+        <p className="mt-4">Waiting for webcam...</p>
+      )}
     </div>
   );
 }
